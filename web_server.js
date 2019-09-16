@@ -2,33 +2,26 @@ const socketServer = require('ws').Server;
 const express = require('express');
 const PORT = 7001;
 const path = require('path');
+
+// Keeps track of the games and ids for a session
 const games = [];
+const messageHandler = require('./messages');
 
 const server = express()
 .listen(PORT, '0.0.0.0', 'localhost', ()=> {
-	console.log(`Listening on port ${PORT}`);
+  console.log(`Listening on port ${PORT}`);
 });
 const wss = new socketServer({ server });
 
 wss.on('connection', (ws, req) => {
-	console.log("Connection established.");
-	ws.on('message', (msg) => {
-		const parsedMessage = JSON.parse(msg);
+  console.log("Connection established.");
+  ws.on('message', (msg) => {
+    // We have a message recieved. We'll parse it and determine its type
+    const parsedMessage = JSON.parse(msg);
+    messageHandler.handleIncomingMessage(parsedMessage, ws, games);
+  });
 
-		if (parsedMessage.type === 'game_new') {
-			if (games.includes(parsedMessage.id)) {
-				ws.send(JSON.stringify({ type: 'server_response', message: "game_already_started" }));
-			} else {
-				console.log('game added to games array');
-				games.push(parsedMessage.id);
-				ws.send(JSON.stringify({ type: 'server_response', message: "game_start_ok" }));
-			}
-		}
-		console.log("recieved message", parsedMessage);
-		ws.send(JSON.stringify({ type: 'server_response', message: 'response from server!'}));
-	});
-
-	ws.on('close', ()=> {
-		console.log("Connection closed");
-	});
+  ws.on('close', ()=> {
+    console.log("Connection closed");
+  });
 });
