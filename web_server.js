@@ -18,7 +18,7 @@ wss.on('connection', (ws, req) => {
   ws.on('message', (msg) => {
     // We have a message recieved. We'll parse it and determine its type
     const parsedMessage = JSON.parse(msg);
-    messageHandler.handleIncomingMessage(parsedMessage, ws, games);
+    messageHandler.handleIncomingMessage(parsedMessage, ws, games, wss);
   });
 
   ws.on('close', ()=> {
