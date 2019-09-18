@@ -16,8 +16,10 @@ const wss = new socketServer({ server });
 wss.on('connection', (ws, req) => {
   console.log("Connection established.");
   ws.on('message', (msg) => {
+    
     // We have a message recieved. We'll parse it and determine its type
     const parsedMessage = JSON.parse(msg);
+    console.log("Line 22 request", req);
     messageHandler.handleIncomingMessage(parsedMessage, ws, games, wss);
   });
 
