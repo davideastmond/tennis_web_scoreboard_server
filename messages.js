@@ -1,7 +1,8 @@
 // This module will interpret incomming messages and respond to them accordingly. 
 // This keeps web_server.js free from clutter
-const WebSocket = require('ws').Server;
 
+const WebSocket = require('ws').Server;
+const gameModule = require('tennis_score.js');
 module.exports = {
   handleIncomingMessage: (parsedData, socket, gamesRef, socket_server) => {
     
@@ -44,7 +45,6 @@ module.exports = {
         } else {
           // Send an error response
           throw "new_gameElement is null";
-;						
         }
         // Broad
       } else {
