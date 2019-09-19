@@ -2,7 +2,7 @@
 // This keeps web_server.js free from clutter
 
 const WebSocket = require('ws').Server;
-const gameModule = require('tennis_score.js');
+const match = require('./tennis_score');
 module.exports = {
   handleIncomingMessage: (parsedData, socket, gamesRef, socket_server) => {
     
@@ -31,11 +31,8 @@ module.exports = {
       // This handles increasing a player's score. Get a copy of the current score, change it, then insert it back into the  gameRef
       const gameElement = getGame(parsedData.id, gamesRef);
       if (gameElement) {
-        if (parsedData.forPlayer === 1 ) {
-          gameElement.score.p1_score++;
-        } else if (parsedData.forPlayer === 2) {
-          gameElement.score.p2_score++;
-        }
+        
+        match.processScoreChange(parsedData.forPlayer, gameElement);
         // The score has been changed save it to the game
         gamesRef = setGameAttrib(gameElement, gamesRef);
         const new_gameElement = getGame(parsedData.id, gamesRef);
@@ -83,8 +80,6 @@ function setGameAttrib(gameObject, refToGames) {
 }
 
 function broadcast(s_server, data) {
-  console.log("Web socket open value:", s_server.OPEN);
-  
   s_server.clients.forEach((client) => {
     if (client.readyState === 1) {
       client.send(data);
