@@ -21,7 +21,7 @@ module.exports = {
       // Get the game score from the array
       const gameElement = getGame(parsedData.id, gamesRef);
       if (gameElement) {
-        socket.send(JSON.stringify({type: 'server_response', message: 'current_game_score', id: gameElement.id, score: gameElement.score }));
+        socket.send(JSON.stringify({type: 'server_response', message: 'current_game_score', id: gameElement.id, game: gameElement }));
       } else {
         // Send an error response
         socket.send(JSON.stringify({ type: 'server_response', message: "game_id_not_found", id: parsedData.id }));
@@ -37,8 +37,7 @@ module.exports = {
         gamesRef = setGameAttrib(gameElement, gamesRef);
         const new_gameElement = getGame(parsedData.id, gamesRef);
         if (new_gameElement) {
-          broadcast(socket_server, JSON.stringify({type: 'server_response', message: 'current_game_score', id: new_gameElement.id, score: new_gameElement.score }));
-          socket.send(JSON.stringify({type: 'server_response', message: 'current_game_score', id: new_gameElement.id, score: new_gameElement.score }));
+          broadcast(socket_server, JSON.stringify({type: 'server_response', message: 'current_game_score', id: new_gameElement.id, game: new_gameElement }));
         } else {
           // Send an error response
           throw "new_gameElement is null";
