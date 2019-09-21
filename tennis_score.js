@@ -40,10 +40,12 @@ module.exports = {
         game.deuce_count++;
       }
       // Analyze sets
-      if (game.sets[game.current_set][pn] === 6 && game.sets[game.current_set][opponent] <= 5) {
+      if (game.sets[game.current_set][pn] === 6 && game.sets[game.current_set][opponent] <= 4) {
         // Call the set
-        current_set++;
-      } else if (game.sets[game.current_set][pn] === 6 && game.sets[game.current_set][opponent] <= 6) {
+        game.current_set++;
+      } else if (game.sets[game.current_set][pn] === 7 && game.sets[game.current_set][opponent] <= 5) {
+        game.current_set++;
+      } else if (game.sets[game.current_set][pn] === 6 && game.sets[game.current_set][opponent] === 6) {
         // Tie break situation
         game.tie_break = true;
       }
@@ -52,16 +54,31 @@ module.exports = {
       game.score[pn]++;
       if (game.score[pn] >= 7 && game.score[opponent] <= game.score[pn] - 2) {
         game.tie_break = false;
-        callGame();
+        callGame(pn, game);
         game.current_set++;
       }
     }
-   
-    
     game.tennis_score = mapGameScore(game, game.tie_break);
-    if (game.current_set > 4) {
-      game.active = false;
-      console.log("Game is over");
+
+    // Evaluate the set to determine a match win
+    if (game.max_set_game === 3) {
+      if (game.current_set === 2) {
+        const get_winner = determineWinner(game);
+
+        if (get_winner >= 0 ){
+          console.log(`${game.players[get_winner]} wins`);
+          game.active = false;
+        }
+      }
+    } else if (game.max_set_game === 5) {
+      if (game.current_set === 4) {
+        const get_winner = determineWinner(game);
+
+        if (get_winner >= 0) {
+          console.log(`${game.players[get_winner]} wins`);
+          game.active = false;
+        }
+      }
     }
     console.log("game ref", game);
   }
@@ -94,4 +111,21 @@ function mapGameScore(game, tie_break) {
   } else {
     return { 0: game.score[0], 1: game.score[1] };
   }
+}
+
+function determineWinner(game) {
+  // This determines who has won the match
+
+  let p1_match_count, p2_match_count = 0;
+  for (let [key, value] of Object.entries(game.sets)) {
+    value[0] > value[1] ? p1_match_count++ : p2_match_count++;
+  }
+
+  if (p1_match_count > p2_match_count) {
+    return 0;
+  } else if (p2_match_count > p1_match_count) {
+    return 1;
+  }
+
+  return -1; // means unable to return winner
 }
