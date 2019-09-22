@@ -11,15 +11,16 @@ module.exports = {
         socket.send(JSON.stringify({ type: 'server_response', message: "game_already_started" }));
         return;
       } else {
-        console.log('game added to games array');
+        
         gamesRef.push(parsedData.game);
         socket.send(JSON.stringify({ type: 'server_response', message: "game_start_ok", id: parsedData.game.id }));
-        console.log(gamesRef);
+    
         return;
       }
     } else if (parsedData.type === "fetch_score") {
       // Get the game score from the array
       const gameElement = getGame(parsedData.id, gamesRef);
+      socket.game_id = parsedData.id;
       if (gameElement) {
         socket.send(JSON.stringify({type: 'server_response', message: 'current_game_score', id: gameElement.id, game: gameElement }));
       } else {
@@ -37,7 +38,7 @@ module.exports = {
         gamesRef = setGameAttrib(gameElement, gamesRef);
         const new_gameElement = getGame(parsedData.id, gamesRef);
         if (new_gameElement) {
-          broadcast(socket_server, JSON.stringify({type: 'server_response', message: 'current_game_score', id: new_gameElement.id, game: new_gameElement }));
+          broadcast(socket_server, JSON.stringify({type: 'server_response', message: 'current_game_score', id: new_gameElement.id, game: new_gameElement }), new_gameElement.id);
         } else {
           // Send an error response
           throw "new_gameElement is null";
@@ -78,9 +79,11 @@ function setGameAttrib(gameObject, refToGames) {
   }
 }
 
-function broadcast(s_server, data) {
+function broadcast(s_server, data, game_id) {
   s_server.clients.forEach((client) => {
-    if (client.readyState === 1) {
+    console.log("Client game ID", client.game_id, game_id);
+    if (client.readyState === 1 && game_id === client.game_id) {
+      
       client.send(data);
     }
   });

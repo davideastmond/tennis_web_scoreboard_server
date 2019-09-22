@@ -42,9 +42,9 @@ module.exports = {
       // Analyze sets
       if (game.sets[game.current_set][pn] === 6 && game.sets[game.current_set][opponent] <= 4) {
         // Call the set
-        game.current_set++;
+        callSet(pn, game);
       } else if (game.sets[game.current_set][pn] === 7 && game.sets[game.current_set][opponent] <= 5) {
-        game.current_set++;
+        callSet(pn, game);
       } else if (game.sets[game.current_set][pn] === 6 && game.sets[game.current_set][opponent] === 6) {
         // Tie break situation
         game.tie_break = true;
@@ -55,7 +55,7 @@ module.exports = {
       if (game.score[pn] >= 7 && game.score[opponent] <= game.score[pn] - 2) {
         game.tie_break = false;
         callGame(pn, game);
-        game.current_set++;
+        callSet(pn, game);
       }
     }
     game.tennis_score = mapGameScore(game, game.tie_break);
@@ -103,6 +103,12 @@ function callGame (pn, game) {
   game.score = resetGameScore();
   game.deuce_count = 0;
   game.sets[game.current_set][pn]++;
+}
+
+function callSet(pn, game) {
+  game.sets[game.current_set][2] = true;
+  game.set_winners[game.current_set] = pn;
+  game.current_set++;
 }
 
 function mapGameScore(game, tie_break) {
