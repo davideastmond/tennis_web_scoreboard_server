@@ -1,4 +1,4 @@
-// This module handles converting a numerical score to a standard tennis score
+// This module handles tennis logic
 const scoreMap = { 0: '0', 1: '15', 2: '30', 3: '40', 4: 'A'};
 
 module.exports = {

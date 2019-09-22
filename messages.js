@@ -81,7 +81,7 @@ function setGameAttrib(gameObject, refToGames) {
 
 function broadcast(s_server, data, game_id) {
   s_server.clients.forEach((client) => {
-    console.log("Client game ID", client.game_id, game_id);
+    //console.log("Client game ID", client.game_id, game_id);
     if (client.readyState === 1 && game_id === client.game_id) {
       
       client.send(data);
