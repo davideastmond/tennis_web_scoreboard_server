@@ -24,5 +24,6 @@ wss.on('connection', (ws, req) => {
 
   ws.on('close', ()=> {
     console.log("Connection closed");
+    console.log("Games:", games);
   });
 });

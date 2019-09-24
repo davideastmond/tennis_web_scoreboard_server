@@ -3,6 +3,7 @@
 
 const WebSocket = require('ws').Server;
 const match = require('./tennis_score');
+const bcrypt = require('bcryptjs');
 module.exports = {
   handleIncomingMessage: (parsedData, socket, gamesRef, socket_server) => {
     
@@ -11,9 +12,17 @@ module.exports = {
         socket.send(JSON.stringify({ type: 'server_response', message: "game_already_started" }));
         return;
       } else {
-        
+        if (parsedData.game.max_set_game !== 3 && parsedData.game.max_set_game !== 5) {
+          socket.send(JSON.stringify({ type: 'server_response', message: "Invalid game set value. It must be 3 or 5" }));
+          return;
+        }
+
+        // Hash the gameID and send it over
+        const salt = bcrypt.genSaltSync(10);
+        const hash = bcrypt.hashSync(parsedData.game.id, salt);
+        parsedData.game.encryptedValue = hash;
         gamesRef.push(parsedData.game);
-        socket.send(JSON.stringify({ type: 'server_response', message: "game_start_ok", id: parsedData.game.id }));
+        socket.send(JSON.stringify({ type: 'server_response', message: "game_start_ok", id: parsedData.game.id, encryptedValue: hash }));
     
         return;
       }
@@ -33,6 +42,11 @@ module.exports = {
       const gameElement = getGame(parsedData.id, gamesRef);
       if (gameElement) {
         
+        if (!parsedData.encryptedValue === gameElement.encryptedValue) {
+          // Can't change score
+          console.log("Can't change score");
+          return;
+        }
         match.processScoreChange(parsedData.forPlayer, gameElement);
         // The score has been changed save it to the game
         gamesRef = setGameAttrib(gameElement, gamesRef);
@@ -47,6 +61,19 @@ module.exports = {
       } else {
         // Invalid game
         socket.send(JSON.stringify({ type: 'server_response', message: "game_id_not_found", id: parsedData.id }));
+      }
+    } else if (parsedData.type === "client_request_updated_game_data") {
+      // Try to find the game in question
+      const findGame = getGame(parsedData.id, gamesRef);
+
+      if (findGame) {
+        // Send the game to the client
+        const server_response = JSON.stringify({ type: 'server_response', status: "found_game", game_data: findGame })
+        socket.send(server_response);
+      } else {
+        // Send an error response
+        const server_response = JSON.stringify({ type: 'server_response', status: "game_not_found"})
+        socket.send(server_response);
       }
     } else {
       // Incoming message not found so throw error
