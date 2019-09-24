@@ -20,11 +20,13 @@ module.exports = {
         // Hash the gameID and send it over
         const salt = bcrypt.genSaltSync(10);
         const hash = bcrypt.hashSync(parsedData.game.id, salt);
-        parsedData.game.encryptedValue = hash;
-        gamesRef.push(parsedData.game);
-        socket.send(JSON.stringify({ type: 'server_response', message: "game_start_ok", id: parsedData.game.id, encryptedValue: hash }));
-    
-        return;
+
+        if (!parsedData.game.encryptedValue) {
+          parsedData.game.encryptedValue = hash;
+          gamesRef.push(parsedData.game);
+          socket.send(JSON.stringify({ type: 'server_response', message: "game_start_ok", id: parsedData.game.id, encryptedValue: hash }));
+          return;
+        }
       }
     } else if (parsedData.type === "fetch_score") {
       // Get the game score from the array
